@@ -1,0 +1,36 @@
+# Креденшали — НІКОЛИ не комітимо
+.env
+credentials/*.json
+!credentials/.gitkeep
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+venv/
+env/
+.venv/
+*.egg-info/
+
+# Тимчасові аудіо та транскрипти
+tmp/
+downloads/
+*.wav
+*.mp3
+*.m4a
+*.txt
+!requirements.txt
+
+# IDE
+.vscode/
+.idea/
+*.swp
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Whisper моделі (важкі)
+models/

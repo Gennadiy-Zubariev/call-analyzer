@@ -1,0 +1,18 @@
+# Google APIs
+google-api-python-client==2.149.0
+google-auth==2.35.0
+google-auth-httplib2==0.2.0
+google-auth-oauthlib==1.2.1
+gspread==6.1.4
+gspread-formatting==1.2.0
+
+# Транскрибація (локально)
+faster-whisper==1.0.3
+
+# LLM аналіз — Ollama локально
+ollama==0.3.3
+
+# Утиліти
+python-dotenv==1.0.1
+pydantic==2.9.2
+tqdm==4.66.5
