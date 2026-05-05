@@ -1,4 +1,3 @@
-"""Централізована конфігурація. Читає .env, валідує, дає типізований доступ."""
 from __future__ import annotations
 
 import os
@@ -62,8 +61,8 @@ class Settings(BaseModel):
             missing.append(f"Файл {self.google_service_account_file} не знайдено")
         if not self.source_drive_folder_id:
             missing.append("SOURCE_DRIVE_FOLDER_ID")
-        if not self.work_drive_folder_id:
-            missing.append("WORK_DRIVE_FOLDER_ID")
+        # if not self.work_drive_folder_id:
+        #     missing.append("WORK_DRIVE_FOLDER_ID")
         if not self.template_sheet_id and not self.work_sheet_id:
             missing.append("TEMPLATE_SHEET_ID або WORK_SHEET_ID")
         if self.transcription_backend == "openai_api" and not self.openai_api_key:
@@ -77,7 +76,7 @@ settings = Settings.from_env()
 
 
 # ===========================================================================
-# Перелік "Топ робіт" — зі скрина шаблонної таблиці.
+# Перелік "Топ робіт".
 # LLM обирає рівно одне значення зі списку. Якщо нічого не підходить — OTHER.
 # ===========================================================================
 WORK_TYPES = [
@@ -109,15 +108,14 @@ ALL_WORK_TYPES = [*WORK_TYPES, OTHER_WORK_TYPE]
 
 
 # ===========================================================================
-# Колонки фінальної таблиці. Точна відповідність шаблону:
-# https://docs.google.com/spreadsheets/d/16I6nqmaD-AjkKF7sQWWQPRn0xnVdS9HBbwBFTe-_y0U
+# Колонки фінальної таблиці.
 #
 # Двохрядковий заголовок: row 1 — групи, row 2 — реальні поля.
 # ===========================================================================
 
 # Group → колонки в цій групі (для row 1, з мерджем).
 HEADER_GROUPS: list[tuple[str, int]] = [
-    ("Ідентифікація", 5),       # A-E
+    ("Ідентифікація", 6),       # A-E
     ("Скрипт", 1),              # F
     ("Інформація про автомобіль", 3),  # G-I
     ("ДОП продажі", 2),         # J-K
@@ -130,6 +128,7 @@ HEADER_GROUPS: list[tuple[str, int]] = [
 SHEET_HEADERS = [
     # Ідентифікація
     "Дата",
+    "Транскрибація",
     "Тип звернення",
     "Номер телефону",
     "Філія",
@@ -148,7 +147,7 @@ SHEET_HEADERS = [
     "Завершення розмови прощання",
     # Інфо
     "Яка робота з топ 100",
-    "Чи дотримувався всіх інструкцій з топ 100 робіт Да/Ні",
+    "Чи дотримувався всіх інструкцій з топ 100 робіт Так/Ні",
     "Яких рекоменадцій менеджер не дотримувався з топ 100 робіт",
     # Результат
     "Результат",
@@ -164,6 +163,6 @@ SHEET_HEADERS = [
 BINARY_COLUMN_INDEXES = [5, 6, 7, 8, 9, 10, 12, 14]
 
 # Допустимі значення для деяких полів (для валідації LLM-виходу)
-CALL_TYPES = ["Авто в роботі", "Консультація", "Вхідний дзвінок", "пропущений", "Інше"]
+CALL_TYPES = ["Авто в роботі", "Консультація", "Вхідний дзвінок", "Пропущений", "Інше"]
 RESULTS = ["Запис", "Запис на сервіс", "Передзвонити", "Повторно консультація", "Інше"]
 PARTS_OPTIONS = ["Наші", "Клієнта", ""]

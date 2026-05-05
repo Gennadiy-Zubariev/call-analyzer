@@ -1,11 +1,8 @@
-"""Google Drive: лістинг, завантаження, копіювання, аплоад."""
 from __future__ import annotations
 
-import io
 import logging
 import mimetypes
 from pathlib import Path
-from typing import Iterable
 
 from google.oauth2.service_account import Credentials
 from googleapiclient.discovery import build
@@ -85,36 +82,36 @@ class DriveClient:
         logger.info("Завантажено %s", destination.name)
         return destination
 
-    def copy_file(self, file_id: str, target_folder_id: str, new_name: str | None = None) -> dict:
-        """Копіює файл у вказану папку (без скачування)."""
-        body = {"parents": [target_folder_id]}
-        if new_name:
-            body["name"] = new_name
-        copy = self.service.files().copy(fileId=file_id, body=body, fields="id, name, webViewLink").execute()
-        logger.info("Скопійовано → %s (id=%s)", copy["name"], copy["id"])
-        return copy
+    # def copy_file(self, file_id: str, target_folder_id: str, new_name: str | None = None) -> dict:
+    #     """Копіює файл у вказану папку (без скачування)."""
+    #     body = {"parents": [target_folder_id]}
+    #     if new_name:
+    #         body["name"] = new_name
+    #     copy = self.service.files().copy(fileId=file_id, body=body, fields="id, name, webViewLink").execute()
+    #     logger.info("Скопійовано → %s (id=%s)", copy["name"], copy["id"])
+    #     return copy
 
-    def upload_text_file(
-        self,
-        local_path: Path,
-        target_folder_id: str,
-        target_name: str | None = None,
-    ) -> dict:
-        """Завантажує текстовий файл (наприклад, транскрипт) у папку Drive."""
-        name = target_name or local_path.name
-        mime, _ = mimetypes.guess_type(str(local_path))
-        media = MediaFileUpload(str(local_path), mimetype=mime or "text/plain", resumable=False)
-        file = (
-            self.service.files()
-            .create(
-                body={"name": name, "parents": [target_folder_id]},
-                media_body=media,
-                fields="id, name, webViewLink",
-            )
-            .execute()
-        )
-        logger.info("Завантажено в Drive: %s", file["name"])
-        return file
+    # def upload_text_file(
+    #     self,
+    #     local_path: Path,
+    #     target_folder_id: str,
+    #     target_name: str | None = None,
+    # ) -> dict:
+    #     """Завантажує текстовий файл (наприклад, транскрипт) у папку Drive."""
+    #     name = target_name or local_path.name
+    #     mime, _ = mimetypes.guess_type(str(local_path))
+    #     media = MediaFileUpload(str(local_path), mimetype=mime or "text/plain", resumable=False)
+    #     file = (
+    #         self.service.files()
+    #         .create(
+    #             body={"name": name, "parents": [target_folder_id]},
+    #             media_body=media,
+    #             fields="id, name, webViewLink",
+    #         )
+    #         .execute()
+    #     )
+    #     logger.info("Завантажено в Drive: %s", file["name"])
+    #     return file
 
     def file_in_folder(self, folder_id: str, file_name: str) -> dict | None:
         """Перевіряє, чи є файл з таким іменем у папці (для ідемпотентності)."""
