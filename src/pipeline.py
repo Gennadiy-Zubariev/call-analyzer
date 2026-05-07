@@ -1,4 +1,3 @@
-"""Головний пайплайн: Drive → транскрибація → LLM-аналіз → Sheets."""
 from __future__ import annotations
 
 import logging

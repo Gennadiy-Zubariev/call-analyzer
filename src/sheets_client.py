@@ -1,4 +1,3 @@
-"""Google Sheets: створення робочої таблиці, дописування дзвінків, форматування."""
 from __future__ import annotations
 
 import logging
@@ -111,33 +110,35 @@ class SheetsClient:
         sheet_id: str,
         date: datetime,
         analysis: "CallAnalysis",
+        transcript: str = "",
     ) -> int:
         """Дописує рядок з результатами аналізу. Повертає номер доданого рядка."""
         ws = self.open_sheet(sheet_id)
 
-        # Рядок будуємо рівно по SHEET_HEADERS
+        # Рядок будуємо рівно по SHEET_HEADERS (22 поля)
         row = [
             date.strftime("%d.%m.%Y"),                       # A: Дата
-            analysis.call_type,                              # B: Тип звернення
-            analysis.phone,                                  # C: Номер телефону
-            analysis.branch,                                 # D: Філія
-            analysis.manager,                                # E: Менеджер
-            analysis.greeting,                               # F: Початок розмови
-            analysis.asked_body,                             # G: Кузов
-            analysis.asked_year,                             # H: Рік
-            analysis.asked_mileage,                          # I: Пробіг
-            analysis.offered_complex_diag,                   # J: Комплексна діагностика
-            analysis.asked_previous_works,                   # K: Попередні роботи
-            analysis.appointment_date,                       # L: Запис на сервіс, Дата
-            analysis.farewell,                               # M: Прощання
-            analysis.work_type,                              # N: Робота з топ-100
-            analysis.followed_top100_instructions,           # O: Дотримувався інструкцій
-            analysis.missed_recommendations,                 # P: Які рекомендації пропущені
-            analysis.result,                                 # Q: Результат
-            analysis.score,                                  # R: Оцінка
-            analysis.parts,                                  # S: Запчастини
-            analysis.comment,                                # T: Коментар
-            analysis.total_score,                            # U: Сума балів (наша колонка)
+            transcript,                                      # B: Транскрибація  ← НОВЕ ПОЛЕ
+            analysis.call_type,                              # C: Тип звернення
+            analysis.phone,                                  # D: Номер телефону
+            analysis.branch,                                 # E: Філія
+            analysis.manager,                                # F: Менеджер
+            analysis.greeting,                               # G: Початок розмови
+            analysis.asked_body,                             # H: Кузов
+            analysis.asked_year,                             # I: Рік
+            analysis.asked_mileage,                          # J: Пробіг
+            analysis.offered_complex_diag,                   # K: Комплексна діагностика
+            analysis.asked_previous_works,                   # L: Попередні роботи
+            analysis.appointment_date,                       # M: Запис на сервіс, Дата
+            analysis.farewell,                               # N: Прощання
+            analysis.work_type,                              # O: Робота з топ-100
+            analysis.followed_top100_instructions,           # P: Дотримувався інструкцій
+            analysis.missed_recommendations,                 # Q: Які рекомендації пропущені
+            analysis.result,                                 # R: Результат
+            analysis.score,                                  # S: Оцінка
+            analysis.parts,                                  # T: Запчастини
+            analysis.comment,                                # U: Коментар
+            analysis.total_score,                            # V: Сума балів
         ]
         assert len(row) == len(SHEET_HEADERS), (
             f"Розбіжність: рядок має {len(row)} полів, а заголовків {len(SHEET_HEADERS)}"
@@ -151,12 +152,12 @@ class SheetsClient:
             self._highlight_row_red(ws, new_row_num)
 
         logger.info(
-            "Записано рядок %d: %s | бал=%d/%d | тип='%s' | проблема=%s",
+            "Записано рядок %d: %s | бал=%d | тип='%s' | проблема=%s",
             new_row_num, analysis.call_type, analysis.total_score,
-            len(BINARY_COLUMN_INDEXES), analysis.work_type, analysis.is_problematic,
+            analysis.work_type, analysis.is_problematic,
         )
         return new_row_num
-
+    
     @staticmethod
     def _highlight_row_red(ws: gspread.Worksheet, row_num: int) -> None:
         last_col = col_letter(len(SHEET_HEADERS) - 1)
