@@ -1,4 +1,3 @@
-"""Транскрибація аудіо. Підтримує локальний faster-whisper і OpenAI API."""
 from __future__ import annotations
 
 import logging
@@ -9,9 +8,11 @@ logger = logging.getLogger(__name__)
 
 
 class Transcriber(ABC):
+    """Базовий клас для транскрибаторів. Реалізації: LocalWhisperTranscriber, OpenAIWhisperTranscriber."""
+
     @abstractmethod
     def transcribe(self, audio_path: Path, language: str = "uk") -> str:
-        """Повертає текст транскрипції."""
+        """Транскрибує аудіофайл і повертає текст."""
 
 
 class LocalWhisperTranscriber(Transcriber):

@@ -7,6 +7,7 @@ from src.pipeline import CallProcessingPipeline
 
 
 def setup_logging(level: str = "INFO") -> None:
+    """Налаштовує root logger і приглушує шум від сторонніх бібліотек."""
     logging.basicConfig(
         level=level,
         format="%(asctime)s | %(levelname)-7s | %(name)s | %(message)s",
@@ -18,6 +19,7 @@ def setup_logging(level: str = "INFO") -> None:
 
 
 def main() -> int:
+    """Точка входу. Повертає exit code: 0=успіх, 1=помилка конфігурації, 2=непередбачена помилка."""
     setup_logging(settings.log_level)
     try:
         pipeline = CallProcessingPipeline(settings)

@@ -1,12 +1,11 @@
 from __future__ import annotations
 
 import logging
-import mimetypes
 from pathlib import Path
 
 from google.oauth2.service_account import Credentials
 from googleapiclient.discovery import build
-from googleapiclient.http import MediaFileUpload, MediaIoBaseDownload
+from googleapiclient.http import MediaIoBaseDownload
 
 logger = logging.getLogger(__name__)
 
@@ -20,6 +19,8 @@ AUDIO_EXTENSIONS = {".mp3", ".wav", ".m4a", ".ogg", ".flac", ".webm", ".mp4"}
 
 
 class DriveClient:
+    """Обгортка над Google Drive API v3 для роботи з аудіофайлами."""
+
     def __init__(self, service_account_file: Path) -> None:
         creds = Credentials.from_service_account_file(
             str(service_account_file), scopes=SCOPES

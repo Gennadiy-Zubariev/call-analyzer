@@ -21,6 +21,8 @@ FILENAME_DATE_PATTERN = re.compile(r"(\d{4})-(\d{2})-(\d{2})[_-](\d{2})[-:](\d{2
 
 
 class CallProcessingPipeline:
+    """Оркеструє повний цикл обробки: скачування аудіо → транскрипція → аналіз → запис у таблицю."""
+
     def __init__(self, settings: Settings) -> None:
         self.settings = settings
         self.drive = DriveClient(settings.google_service_account_file)
@@ -48,6 +50,7 @@ class CallProcessingPipeline:
         return sheet_id
 
     def run(self) -> None:
+        """Запускає повний пайплайн для всіх аудіофайлів із source-папки."""
         self.settings.validate_required()
 
         logger.info("=" * 60)

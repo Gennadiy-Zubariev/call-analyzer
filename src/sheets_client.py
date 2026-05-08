@@ -29,7 +29,7 @@ HEADER_FMT = CellFormat(
 
 
 def col_letter(index_zero_based: int) -> str:
-    """0 → A, 25 → Z, 26 → AA. Працює до колонки ZZ."""
+    """Перетворює 0-based індекс колонки на літеру (0→A, 25→Z, 26→AA). Працює до ZZ."""
     n = index_zero_based
     if n < 26:
         return string.ascii_uppercase[n]
@@ -39,12 +39,14 @@ def col_letter(index_zero_based: int) -> str:
 
 
 class SheetsClient:
+    """Обгортка над gspread для запису результатів аналізу дзвінків."""
+
     def __init__(self, credentials: Credentials) -> None:
         self.gc = gspread.authorize(credentials)
         self._creds = credentials
 
-
     def open_sheet(self, sheet_id: str) -> gspread.Worksheet:
+        """Повертає перший аркуш таблиці за її ID."""
         return self.gc.open_by_key(sheet_id).sheet1
 
     def ensure_headers(self, sheet_id: str) -> None:
@@ -112,7 +114,7 @@ class SheetsClient:
         # Рядок будуємо рівно по SHEET_HEADERS (22 поля)
         row = [
             date.strftime("%d.%m.%Y"),                       # A: Дата
-            transcript,                                      # B: Транскрибація  ← НОВЕ ПОЛЕ
+            transcript,                                      # B: Транскрибація
             analysis.call_type,                              # C: Тип звернення
             analysis.phone,                                  # D: Номер телефону
             analysis.branch,                                 # E: Філія

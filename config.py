@@ -1,3 +1,4 @@
+"""Конфігурація через .env + Pydantic. Константи структури таблиці та типів робіт."""
 from __future__ import annotations
 
 import os
@@ -15,27 +16,26 @@ DOWNLOADS_DIR.mkdir(exist_ok=True)
 
 
 class Settings(BaseModel):
-    # Google
+    """Налаштування застосунку. Зчитуються з .env через from_env()."""
+
     google_service_account_file: Path
     source_drive_folder_id: str
     work_drive_folder_id: str
     work_sheet_id: str = ""
 
-    # Транскрибація
     transcription_backend: Literal["whisper_local", "openai_api"] = "whisper_local"
     whisper_model: str = "large-v3"
     whisper_device: Literal["cpu", "cuda", "auto"] = "auto"
     openai_api_key: str = ""
 
-    # LLM (локальний Ollama)
     ollama_host: str = "http://localhost:11434"
     ollama_model: str = "qwen2.5:7b"
 
-    # Інше
     log_level: str = "INFO"
 
     @classmethod
     def from_env(cls) -> "Settings":
+        """Створює Settings зі змінних оточення (читає .env через python-dotenv)."""
         return cls(
             google_service_account_file=Path(
                 os.getenv("GOOGLE_SERVICE_ACCOUNT_FILE", "credentials/service-account.json")
