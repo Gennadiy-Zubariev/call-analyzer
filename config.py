@@ -19,7 +19,6 @@ class Settings(BaseModel):
     google_service_account_file: Path
     source_drive_folder_id: str
     work_drive_folder_id: str
-    template_sheet_id: str
     work_sheet_id: str = ""
 
     # Транскрибація
@@ -43,7 +42,6 @@ class Settings(BaseModel):
             ),
             source_drive_folder_id=os.getenv("SOURCE_DRIVE_FOLDER_ID", ""),
             work_drive_folder_id=os.getenv("WORK_DRIVE_FOLDER_ID", ""),
-            template_sheet_id=os.getenv("TEMPLATE_SHEET_ID", ""),
             work_sheet_id=os.getenv("WORK_SHEET_ID", ""),
             transcription_backend=os.getenv("TRANSCRIPTION_BACKEND", "whisper_local"),
             whisper_model=os.getenv("WHISPER_MODEL", "large-v3"),
@@ -61,10 +59,6 @@ class Settings(BaseModel):
             missing.append(f"Файл {self.google_service_account_file} не знайдено")
         if not self.source_drive_folder_id:
             missing.append("SOURCE_DRIVE_FOLDER_ID")
-        # if not self.work_drive_folder_id:
-        #     missing.append("WORK_DRIVE_FOLDER_ID")
-        if not self.template_sheet_id and not self.work_sheet_id:
-            missing.append("TEMPLATE_SHEET_ID або WORK_SHEET_ID")
         if self.transcription_backend == "openai_api" and not self.openai_api_key:
             missing.append("OPENAI_API_KEY (бо вибраний backend openai_api)")
 

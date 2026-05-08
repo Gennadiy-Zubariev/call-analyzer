@@ -16,7 +16,6 @@ from src.transcriber import Transcriber, make_transcriber
 logger = logging.getLogger(__name__)
 
 
-# Часто аудіозаписи з телефонії мають імена типу:
 # 2025-09-10_15-52_0632838007_incoming.mp3
 FILENAME_DATE_PATTERN = re.compile(r"(\d{4})-(\d{2})-(\d{2})[_-](\d{2})[-:](\d{2})")
 
@@ -43,20 +42,8 @@ class CallProcessingPipeline:
         return self.transcriber
 
     def _ensure_work_sheet(self) -> str:
-        """Якщо WORK_SHEET_ID порожній — створюємо нову таблицю.
-        Заголовки створюються в обох випадках (ідемпотентно)."""
-        if self.settings.work_sheet_id:
-            sheet_id = self.settings.work_sheet_id
-            logger.info("Використовую існуючу таблицю: %s", sheet_id)
-        else:
-            sheet_id = self.sheets.create_work_sheet()
-            logger.warning(
-                "\n%s\nСТВОРЕНО НОВУ ТАБЛИЦЮ. Збережіть ID у .env:\n"
-                "  WORK_SHEET_ID=%s\n"
-                "URL: https://docs.google.com/spreadsheets/d/%s\n%s",
-                "=" * 70, sheet_id, sheet_id, "=" * 70,
-            )
-
+        sheet_id = self.settings.work_sheet_id
+        logger.info("Використовую існуючу таблицю: %s", sheet_id)
         self.sheets.ensure_headers(sheet_id)
         return sheet_id
 
@@ -91,58 +78,46 @@ class CallProcessingPipeline:
         )
 
     def _process_one(self, file_meta: dict, work_sheet_id: str) -> None:
+        """Повний цикл обробки одного файлу."""
         name = file_meta["name"]
         file_id = file_meta["id"]
         logger.info("\n--- %s ---", name)
 
-        # 3.1 Копіювання у робочу папку (з ідемпотентністю)
-        existing = self.drive.file_in_folder(self.settings.work_drive_folder_id, name)
-        if existing:
-            logger.info("Файл уже є в робочій папці, пропускаю копіювання")
-            work_audio = existing
+        # 1. Завантажуємо аудіо локально (якщо ще немає)
+        local_audio = DOWNLOADS_DIR / name
+        if not local_audio.exists():
+            self.drive.download_file(file_id, local_audio)
         else:
-            work_audio = self.drive.copy_file(
-                file_id, self.settings.work_drive_folder_id, new_name=name
-            )
+            logger.info("Аудіо вже скачане локально, пропускаю")
 
-        # 3.2 Завантаження локально для транскрибації
-        local_path = DOWNLOADS_DIR / name
-        if not local_path.exists():
-            self.drive.download_file(work_audio["id"], local_path)
-
-        # 3.3 Транскрибація (з кешем у Drive)
-        transcript_name = local_path.stem + ".txt"
-        existing_transcript = self.drive.file_in_folder(
-            self.settings.work_drive_folder_id, transcript_name
-        )
-        if existing_transcript:
-            logger.info("Транскрипт уже є в Drive, читаю звідти")
-            local_transcript = DOWNLOADS_DIR / transcript_name
-            if not local_transcript.exists():
-                self.drive.download_file(existing_transcript["id"], local_transcript)
+        # 2. Транскрибуємо (якщо ще немає .txt)
+        local_transcript = local_audio.with_suffix(".txt")
+        if local_transcript.exists():
+            logger.info("Транскрипт уже є локально, читаю з кешу")
             transcript_text = local_transcript.read_text(encoding="utf-8")
         else:
             transcriber = self._ensure_transcriber()
-            transcript_text = transcriber.transcribe(local_path, language="uk")
-
-            local_transcript = DOWNLOADS_DIR / transcript_name
+            transcript_text = transcriber.transcribe(local_audio, language="uk")
             local_transcript.write_text(transcript_text, encoding="utf-8")
+            logger.info("Транскрипт збережено: %s", local_transcript)
 
-            self.drive.upload_text_file(
-                local_transcript, self.settings.work_drive_folder_id
-            )
-
-        # 3.4 LLM-аналіз
+        # 3. LLM-аналіз
         analysis = self.analyzer.analyze(transcript_text)
 
-        # 3.5 Дата дзвінка: спочатку з імені файлу, потім з createdTime
+        # 4. Витягаємо дату дзвінка
         date = self._extract_call_date(name, file_meta)
 
-        # 3.6 Запис у таблицю
+        # 5. Записуємо рядок у таблицю
+        # Передаємо тільки початок транскрипту (Sheets ліміт ~50000 знаків на комірку,
+        # але довгі тексти роблять таблицю некрасивою)
+        transcript_preview = (
+            transcript_text[:500] + "..." if len(transcript_text) > 500 else transcript_text
+        )
         self.sheets.append_call_row(
             sheet_id=work_sheet_id,
             date=date,
             analysis=analysis,
+            transcript=transcript_preview,
         )
 
     @staticmethod

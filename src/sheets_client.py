@@ -43,12 +43,6 @@ class SheetsClient:
         self.gc = gspread.authorize(credentials)
         self._creds = credentials
 
-    def create_work_sheet(self, title: str | None = None) -> str:
-        """Створює нову таблицю і повертає її ID. Заголовки формуються окремо."""
-        title = title or f"Звіт прослуханих розмов — {datetime.now():%Y-%m-%d}"
-        sh = self.gc.create(title)
-        logger.info("Створено таблицю: %s (id=%s)", title, sh.id)
-        return sh.id
 
     def open_sheet(self, sheet_id: str) -> gspread.Worksheet:
         return self.gc.open_by_key(sheet_id).sheet1
