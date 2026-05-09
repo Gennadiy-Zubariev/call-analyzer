@@ -2,6 +2,7 @@
 .env
 credentials/*.json
 !credentials/.gitkeep
+.claude/
 
 # Python
 __pycache__/

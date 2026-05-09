@@ -1,4 +1,3 @@
-"""Конфігурація через .env + Pydantic. Константи структури таблиці та типів робіт."""
 from __future__ import annotations
 
 import os

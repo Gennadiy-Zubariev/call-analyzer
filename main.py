@@ -1,4 +1,3 @@
-"""Точка входу: python main.py"""
 import logging
 import sys
 
